@@ -1,0 +1,2097 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rto Quiz- Traffic signs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        max-width: 1300px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        /* Added top padding so the first question isn't hidden by the floating score */
+        padding-top: 80px;
+      }
+
+      .main-container {
+        width: 100%;
+      }
+
+      .question-tab {
+        border: 2px solid gray;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 20px;
+        background-color: #1a1a1a;
+      }
+
+      .q-options {
+        border-right: 2px solid gray;
+        flex: 1 1 60%;
+        padding-right: 20px;
+      }
+
+      .img-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex: 1 1 40%;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      h1 {
+        font-family: "Manrope", sans-serif;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+      }
+
+      .options {
+        list-style-type: none;
+      }
+
+      /* Styling for the clickable options */
+      .option-item {
+        background-color: #333;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        border: 1px solid transparent;
+      }
+
+      .option-item:hover {
+        background-color: #444;
+      }
+
+      /* Styles applied via JavaScript when clicked */
+      .option-item.correct {
+        background-color: #2e7d32; /* Green */
+        color: white;
+        border-color: #4caf50;
+      }
+
+      .option-item.wrong {
+        background-color: #c62828; /* Red */
+        color: white;
+        border-color: #ef5350;
+      }
+
+      /* Disable clicking after an answer is chosen */
+      .options.answered .option-item {
+        pointer-events: none;
+      }
+
+      /* Keep unselected options slightly faded after answering */
+      .options.answered .option-item:not(.correct):not(.wrong) {
+        opacity: 0.5;
+      }
+
+      /* --- NEW SCORE CONTAINER DESIGN --- */
+      .score-container {
+        position: fixed;
+        top: 20px;
+        right: 20px; /* Moved to the right for a more standard look */
+        padding: 12px 24px;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border-radius: 30px;
+        font-family: "Manrope", sans-serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+      }
+
+      .score-container::before {
+        content: "Score:";
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.8;
+        margin-right: 5px;
+      }
+
+      .score-numbers {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .question-tab {
+          flex-direction: column;
+        }
+        .q-options {
+          padding-right: 0;
+          padding-bottom: 20px;
+          border-right: none;
+          border-bottom: 2px solid gray;
+        }
+        .score-container {
+          top: 10px;
+          right: 10px;
+          font-size: 1rem;
+          padding: 8px 16px;
+        }
+        body {
+          padding-top: 70px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="score-container">
+      <div class="score-numbers">
+        <span class="scored">0</span> / <span class="total">0</span>
+      </div>
+    </div>
+    <div class="main-container"></div>
+
+    <script>
+      const questionData = [
+        {
+          id: 1,
+          question:
+            "DRIVING IS A REPETITION OF THREE THINGS. WHICH ARE THEY IN CORRECT ORDER?",
+          options: {
+            a: "THINK, DO AND SEE",
+            b: "DO, THINK AND SEE",
+            c: "SEE, THINK AND DO",
+            d: "SEE, DO AND THINK",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 2,
+          question:
+            "WHICH OF THE FOLLOWING SHOULD BE DONE CONTINUOUSLY WHILE DRIVING A VEHICLE?",
+          options: {
+            a: "CHECKING LEVEL OF FUEL TANK",
+            b: "ASSESSING ROAD CONDITIONS AHEAD",
+            c: "ADJUSTING VEHICLE CONTROLS FOR SMOOTH RUNNING",
+            d: "MAKING A VISUAL CHECK FOR ALL CONTROLS",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 3,
+          question:
+            "YOU START TO FEEL TIRED WHILE DRIVING. WHAT SHOULD YOU DO?",
+          options: {
+            a: "INCREASE YOUR SPEED SLIGHTLY",
+            b: "DECREASE YOUR SPEED SLIGHTLY",
+            c: "FIND A LESS BUSY ROUTE",
+            d: "STOP AT A SAFE PLACE TO REST",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 4,
+          question:
+            "WHILE DRIVING A CAR, A PROPERLY ADJUSTED HEAD RESTRAINT WILL",
+          options: {
+            a: "MAKE YOU MORE COMFORTABLE",
+            b: "HELP YOU TO AVOID NECK INJURY",
+            c: "HELP YOU TO RELAX",
+            d: "HELP YOU TO MAINTAIN YOUR DRIVING POSITION",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 5,
+          question: "YOU SHOULD ONLY USE A MOBILE PHONE WHEN",
+          options: {
+            a: "RECEIVING A CALL",
+            b: "THE VEHICLE IS STATIONARY & PARKED SUITABLY.",
+            c: "DRIVING AT LESS THAN 30 KMPH",
+            d: "DRIVING AN AUTOMATIC TRANSMISSION VEHICLE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 6,
+          question: "WHILE DRIVING, AVOID",
+          options: {
+            a: "REACTING TO WRONG BEHAVIOUR OF OTHER DRIVERS.",
+            b: "GETTING DISTRACTED BY HOARDINGS",
+            c: "BOTH OF THE ABOVE.",
+            d: "OBSERVING DASH BOARD GAUGES BECAUSE THIS WILL AFFECT YOUR CONCENTRATION.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 7,
+          question:
+            "TO HELP CONCENTRATION ON LONG JOURNEYS YOU SHOULD STOP FREQUENTLY AND",
+          options: {
+            a: "HAVE A REST",
+            b: "FILL UP WITH FUEL",
+            c: "EAT A MEAL",
+            d: "HAVE A DRINK",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 8,
+          question: "WHAT IS MEANT BY 'DEFENSIVE DRIVING'?",
+          options: {
+            a: "BEING ALERT AND THINKING AHEAD",
+            b: "ALWAYS DRIVING SLOWLY AND GENTLY",
+            c: "ALWAYS LETTING OTHERS GO FIRST",
+            d: "PULLING OVER FOR FASTER TRAFFIC",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 9,
+          question: "TO DRIVE ON THE ROAD, LEARNERS MUST",
+          options: {
+            a: "HAVE ONLY THE REGISTRATION CERTIFICATE OF THE VEHICLE",
+            b: "HAVE TAKEN PROFESSIONAL INSTRUCTION",
+            c: "HAVE A VALID LEARNERS LICENCE",
+            d: "APPLY FOR A DRIVING TEST WITHIN 12 MONTHS.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 10,
+          question:
+            "WHICH OF THE FOLLOWING TYPES OF EYE GLASSES SHOULD NOT BE WORN WHEN DRIVING AT NIGHT?",
+          options: {
+            a: "HALF-MOON",
+            b: "ROUND",
+            c: "TINTED",
+            d: "BI-FOCAL",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 11,
+          question: "OBJECTS HANGING FROM YOUR INTERIOR MIRROR MAY",
+          options: {
+            a: "RESTRICT YOUR VIEW & DISTRACT YOUR ATTENTION",
+            b: "IMPROVE YOUR DRIVING",
+            c: "HELP YOU CONCENTRATION",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 12,
+          question: "WHAT IS THE BEST WAY TO PREVENT FATIGUE WHEN DRIVING?",
+          options: {
+            a: "AVOID NIGHT DRIVING",
+            b: "STOP FOR REST",
+            c: "DRINK TWO PEGS OF GOOD QUALITY WHISKY",
+            d: "DON'T CARRY ANY LOAD",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 13,
+          question:
+            "YOUR OVERALL STOPPING DISTANCE WILL BE MUCH LONGER WHEN DRIVING",
+          options: {
+            a: "IN RAIN",
+            b: "IN FOG",
+            c: "IN STRONG WINDS",
+            d: "AT NIGHT",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 14,
+          question:
+            "WHEN DRIVING AT SUNSET OR DAWN ON A DARK DAY. WHAT SHOULD YOU DO?",
+          options: {
+            a: "KEEP YOUR SUNGLASSES ON TO CUT DOWN HEADLIGHT GLARE.",
+            b: "TURN ON YOUR LIGHTS ON LOW BEAM.",
+            c: "TURN ON YOUR HAZARD WARNING LIGHTS.",
+            d: "DRIVE VERY FAST",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 15,
+          question:
+            "AT ROAD JUNCTIONS WHICH OF THE FOLLOWING ARE MOST VULNERABLE?",
+          options: {
+            a: "MOTORCYCLISTS",
+            b: "CYCLISTS",
+            c: "PEDESTRIANS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 16,
+          question:
+            "IN WHAT SITUATION ARE OTHER DRIVERS ALLOWED TO FLASH THEIR HEADLIGHTS AT YOU?",
+          options: {
+            a: "TO WARN YOU OF THEIR PRESENCE",
+            b: "TO WARN YOU DANGER IS AHEAD",
+            c: "TO WARN YOU WHEN YOU'RE BREAKING THE SPEED LIMIT",
+            d: "TO TELL YOU THAT THEY ARE GIVING WAY TO YOU",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 17,
+          question:
+            "WHAT IS THE BEST WAY TO AVOID HITTING OTHER VEHICLES, PEOPLE OR ANIMALS WHEN MOVING OFF FROM THE KERB?",
+          options: {
+            a: "GET OUT OF THE CAR, LOOK AROUND AND QUICKLY DRIVE OFF.",
+            b: "SOUND YOUR HORN CONTINUOUSLY.",
+            c: "CHECK YOUR MIRRORS AND LOOK OVER YOUR SHOULDER BEFORE MOVING OFF.",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 18,
+          question: "WHICH OF THESE STATEMENTS IS TRUE?",
+          options: {
+            a: "PEDESTRIANS HAVE NO SPECIAL RIGHTS ON THE ROAD",
+            b: "YOU MUST GIVE RIGHT OF WAY TO PEDESTRIANS ONLY ON ZEBRA CROSSINGS. WATCH OUT FOR PEDESTRIANS WHO MAY HURRY AND TAKE RISKS.",
+            c: "PEDESTRIANS HAVE RIGHT OF WAY AT UNCONTROLLED PEDESTRIAN CROSSING",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 19,
+          question: "WHEN DRIVING IN WET WEATHER YOU SHOULD",
+          options: {
+            a: "DRIVE IN THE MIDDLE OF THE ROAD TO AVOID SPLASHING WATER ON PEDESTRIANS?",
+            b: "WATCH OUT FOR PEDESTRIANS WHO MAY HURRY AND TAKE RISKS.",
+            c: "STOP AND HELP ELDERLY PEOPLE CROSS THE ROAD",
+            d: "DRIVE AT SPECIFIED SPEED LIMIT",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 20,
+          question:
+            "YOU MUST OBEY SIGNS GIVING ORDERS. THESE SIGNS ARE MOSTLY IN",
+          options: {
+            a: "BLACK TRIANGLES",
+            b: "RED TRIANGLES",
+            c: "BLUE RECTANGLES",
+            d: "RED/BLUE CIRCLES",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 21,
+          question: "A RED TRAFFIC LIGHT MEANS",
+          options: {
+            a: "YOU MAY GO STRAIGHT ON IF THERE IS NO OTHER TRAFFIC",
+            b: "YOU MUST STOP BEHIND WHITE STOP LINE",
+            c: "YOU MAY TURN LEFT IF IT IS SAFE TO DO SO",
+            d: "YOU MUST SLOW DOWN AND PREPARE TO STOP IF TRAFFIC HAS STARTED TO CROSS.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 22,
+          question:
+            "AS A LEARNING LICENCE-HOLDER YOU SHOULD NOT DRIVE A VEHICLE",
+          options: {
+            a: "UPTO 50 KMPH",
+            b: "AT NIGHT",
+            c: "ON THE MOTORWAY WITHOUT A PERMANENT LICENCE HOLDER.",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 23,
+          question: "ON WHICH OF THESE OCCASIONS MUST YOU STOP YOUR VEHICLE?",
+          options: {
+            a: "WHEN INVOLVED IN AN ACCIDENT",
+            b: "AT A RED TRAFFIC LIGHT",
+            c: "WHEN SIGNALED TO DO SO BY A POLICE OFFICER",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 24,
+          question:
+            "WHY SHOULD YOU MAKE SURE THAT YOU HAVE CANCELLED YOUR INDICATORS AFTER TURNING?",
+          options: {
+            a: "TO AVOID FLATTENING THE BATTERY",
+            b: "TO AVOID MISLEADING OTHER ROAD USERS",
+            c: "TO AVOID DAZZLING OTHER ROAD USERS",
+            d: "TO AVOID DAMAGE TO THE INDICATOR RELAY",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 25,
+          question:
+            "HOW MUCH DISTANCE SHOULD YOU KEEP FROM A VEHICLE TRAVELLING IN FRONT OF YOU?",
+          options: {
+            a: "15 METERS",
+            b: "10 METERS",
+            c: "DEPENDS ON THE SPEED OF THE VEHICLE TRAVELLING IN FRONT OF YOU",
+            d: "A DISTANCE SUFFICIENT TO AVOID COLLISION IF THE VEHICLE IN FRONT OF YOU SUDDENLY SLOWS DOWN OR STOPS",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 26,
+          question: "YOU MUST NOT USE YOUR HORN WHEN YOU ARE STATIONARY",
+          options: {
+            a: "UNLESS A MOVING VEHICLE MAY CAUSE YOU DANGER",
+            b: "AT ANY TIME WHATSOEVER",
+            c: "UNLESS IT IS USED ONLY BRIEFLY",
+            d: "EXCEPT FOR SIGNALING THAT YOU HAVE JUST ARRIVED",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 27,
+          question: "WHEN OTHER DRIVERS FLASH THEIR HEADLIGHTS AT YOU IT MEANS",
+          options: {
+            a: "THAT THERE IS A RADAR SPEED TRAP AHEAD",
+            b: "THAT THEY ARE GIVING WAY TO YOU",
+            c: "THAT THEY ARE WARNING YOU OF THEIR PRESENCE",
+            d: "THAT THERE IS SOMETHING WRONG WITH YOUR VEHICLE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 28,
+          question:
+            "WHILE DRIVING, A WARNING LIGHT ON YOUR VEHICLE'S INSTRUMENT PANEL COMES ON. YOU SHOULD",
+          options: {
+            a: "CONTINUE IF THE ENGINE SOUNDS ALRIGHT",
+            b: "HOPE THAT IT IS JUST A TEMPORARY ELECTRICAL FAULT",
+            c: "DEAL WITH THE PROBLEM WHEN THERE IS MORE TIME",
+            d: "CHECK OUT THE PROBLEM QUICKLY AND SAFELY",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 29,
+          question:
+            "WHICH OF THESE MUST BE IN GOOD WORKING ORDER FOR YOUR CAR TO BE ROADWORTHY?",
+          options: {
+            a: "SPEEDOMETER",
+            b: "HORN",
+            c: "WINDSCREEN WIPER",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 30,
+          question: "REAR VIEW MIRROR IS?",
+          options: {
+            a: "FOR VIEWING THE TRAFFIC APPROACHING FROM BEHIND",
+            b: "FOR KEEPING AN EYE ON THE PASSENGERS ON THE REAR SEAT",
+            c: "NOT NECESSARY IN THE VEHICLE",
+            d: "A HAZARD AS IT CAUSES DISTRACTION",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 31,
+          question: "HAND BRAKE IS TO BE USED TO?",
+          options: {
+            a: "REDUCE SPEED",
+            b: "PARK THE VEHICLE",
+            c: "BRAKE SUDDENLY",
+            d: "CONTROL A SKID",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 32,
+          question:
+            "THE MOST EFFECTIVE DEVICE FOR PROTECTING PASSENGERS DURING ACCIDENT IS",
+          options: {
+            a: "SEAT BELTS",
+            b: "SAFETY DOOR LATCHES",
+            c: "PADDED INSTRUMENT PANELS",
+            d: "NONE OF THESE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 33,
+          question:
+            "YOU BORROW A FRIEND'S CAR AND FIND THAT THE POSITION OF THE DRIVER'S SEAT PUTS YOU SITTING A LONG WAY FROM THE STEERING WHEEL AND CONTROLS. WHAT SHOULD YOU DO?",
+          options: {
+            a: "YOU SHOULD NEVER BORROW ANOTHER PERSON'S VEHICLE.",
+            b: "YOU SHOULD NOT ADJUST ANOTHER PERSON'S SEAT",
+            c: "ADJUST THE SEAT FORWARD TO FIT YOU",
+            d: "ASK YOUR FRIEND FOR A CUSHION TO PLACE BEHIND YOUR BACK.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 34,
+          question: "MIRRORS ARE OFTEN SLIGHTLY CURVED (CONVEX), SO THAT",
+          options: {
+            a: "THEY TOTALLY COVER BLIND SPOTS",
+            b: "THEY GIVE A WIDER FIELD OF VISION",
+            c: "THEY MAKE IT EASIER TO JUDGE THE SPEED OF FOLLOWING TRAFFIC",
+            d: "THEY MAKE FOLLOWING TRAFFIC LOOK BIGGER",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 35,
+          question:
+            "WHAT SHOULD BE THE COLOUR SCHEME FOR NUMBER PLATES FOR PRIVATE VEHICLES?",
+          options: {
+            a: "BLACK BASE AND WHITE NUMERALS",
+            b: "YELLOW BASE AND WHITE NUMERALS",
+            c: "WHITE BASE AND BLACK NUMERALS",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 36,
+          question:
+            "YOU HAVE A VALID LEARNER'S LICENCE TO DRIVE A CAR, YOU ARE ALLOWED TO",
+          options: {
+            a: "DRIVE ONLY AT DAYTIME",
+            b: "PRACTICE DRIVING ON ROADS THAT HAVE VERY LITTLE TRAFFIC",
+            c: "DRIVE AT ANY TIME, ANY PLACE",
+            d: "DRIVE AT ANY TIME, AND ANY PLACE PROVIDED THERE IS A PERMANENT LICENCE HOLDER WITH YOU WHO CAN CONTROL THE VEHICLE IN CASE OF EMERGENCY",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 37,
+          question:
+            "IF YOU HAVE A VALID DRIVING LICENCE FOR A LIGHT MOTOR VEHICLE, WHAT ARE YOU ALLOWED TO DRIVE?",
+          options: {
+            a: "MOTOR CAR ONLY",
+            b: "MOTOR CAR AND MOTORCYCLE ABOVE 50CC",
+            c: "EVERY MOTOR VEHICLE",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 38,
+          question:
+            "IF YOU MEET WITH AN ACCIDENT WHILE DRIVING A VEHICLE, WITHOUT A VALID DRIVING LICENCE, THE INSURANCE COMPANY WILL",
+          options: {
+            a: "COMPENSATE PARTLY FOR DAMAGES",
+            b: "COMPENSATE FULLY FOR DAMAGES",
+            c: "NOT COMPENSATE FOR DAMAGES",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 39,
+          question:
+            "WHILE DRIVING ON THE ROAD WITHOUT A VALID DRIVING LICENCE, WHEN CAN YOU FACE A PENAL ACTION?",
+          options: {
+            a: "ONLY WHEN YOU HAVE MET WITH AN ACCIDENT",
+            b: "WHEN CHECKING OFFICER CHECK YOUR VEHICLE",
+            c: "WILL NOT FACE A PENAL ACTION",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 40,
+          question: "LEARNERS LICENCE IS VALID",
+          options: {
+            a: "FOR 30 DAYS",
+            b: "TILL PERMANENT LICENCE IS ISSUED",
+            c: "FOR SIX MONTHS",
+            d: "FOR ONE YEAR",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 41,
+          question: "PUCC STANDS FOR",
+          options: {
+            a: "PRIMARY UNLICENCED CAR & CARRIER",
+            b: "POLLUTION UNDER CONTROL CERTIFICATE",
+            c: "POLLUTION UNCONTROLLED CANCELLATION CERTIFICATE",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 42,
+          question: "MINIMUM AGE TO OBTAIN A CAR DRIVING LICENCE IS?",
+          options: {
+            a: "20 YEAR",
+            b: "15 YEARS",
+            c: "16 YEARS",
+            d: "18 YEARS",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 43,
+          question:
+            "YOUR CAR IS INVOLVED IN AN ACCIDENT HURTING PEOPLE, YOU SHOULD",
+          options: {
+            a: "REPORT TO THE NEAREST POLICE STATION AND TAKE THE PERSONS TO THE HOSPITAL",
+            b: "NEED NOT REPORT TO THE POLICE STATION",
+            c: "NEED NOT REPORT TO THE POLICE STATION BUT SHOULD TAKE THE PERSONS TO THE HOSPITAL.",
+            d: "RUN AWAY",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 44,
+          question:
+            "IS IT AN OFFENCE TO OBSTRUCT CLEAR VISION OF YOUR NUMBER PLATES?",
+          options: {
+            a: "DEPENDS ON THE TYPE OF OBSTRUCTION",
+            b: "YES, AT ANY TIME",
+            c: "NO, YOU ARE ALLOWED TO COVER YOUR NUMBER PLATES IF YOU WANT TO.",
+            d: "YES, BUT IS LEGAL FOR A TOWBAR OR BICYCLE RACK TO COVER THE REAR NUMBER PLATE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 45,
+          question:
+            "ARE YOU ALLOWED TO USE A HAND-HELD MOBILE PHONE WHILE DRIVING A CAR?",
+          options: {
+            a: "YES, BUT ONLY WHEN YOU STOP AT INTERSECTIONS.",
+            b: "NO",
+            c: "YES, BUT YOU MUST HOLD THE STEERING WHEEL WITH AT LEAST ONE HAND.",
+            d: "ONLY AT NIGHT",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 46,
+          question:
+            "WHICH OF THE FOLLOWING IS A BASIC STEP TO TAKE AFTER AN ACCIDENT?",
+          options: {
+            a: "PROTECT THE AREA.",
+            b: "INFORM TO AUTHORITIES",
+            c: "CARE FOR THE INJURED.",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 47,
+          question:
+            "WHAT PHONE NUMBER WILL YOU DIAL IN CASE OF A MEDICAL EMERGENCY TO GET ASSISTANCE BY THE AMBULANCE?",
+          options: {
+            a: "102",
+            b: "103",
+            c: "108",
+            d: "105",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 48,
+          question:
+            "YOU ARRIVE AT THE SCENE OF AN ACCIDENT. WHAT IS THE FIRST THING YOU SHOULD DO?",
+          options: {
+            a: "CALL THE POLICE",
+            b: "WARN OTHER TRAFFIC",
+            c: "CALL THE AMBULANCE",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 49,
+          question: "ACCIDENTS OCCUR",
+          options: {
+            a: "DUE TO THE NEGLIGENCE OF DRIVERS.",
+            b: "DUE TO VEHICLE FAILURE.",
+            c: "BECAUSE OF DIFFICULT ROAD & CLIMATIC CONDITIONS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 50,
+          question:
+            "THE AGE GROUP OF DRIVERS MOSTLY INVOLVED IN A ROAD ACCIDENT?",
+          options: {
+            a: "36 TO 45 YEAR OLD",
+            b: "55 YEAR OLD AND OVER",
+            c: "46 TO 55 YEARS OLD",
+            d: "17 TO 25 YEARS OLD",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 51,
+          question:
+            "AN OLDER PERSON'S DRIVING ABILITY COULD BE AFFECTED BECAUSE THEY MAY BE UNABLE TO",
+          options: {
+            a: "UNDERSTAND ROAD SIGNS",
+            b: "OBTAIN CAR INSURANCE",
+            c: "REACT VERY QUICKLY",
+            d: "GIVE SIGNALS CORRECTLY",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 52,
+          question: "YOU SHOULD NOT USE A MOBILE PHONE WHILE DRIVING",
+          options: {
+            a: "UNTIL YOU ARE SATISFIED THAT NO OTHER TRAFFIC IS NEAR",
+            b: "UNLESS YOU ARE ABLE TO DRIVE ONE HANDED",
+            c: "BECAUSE IT MIGHT DISTRACT YOUR ATTENTION FROM THE ROAD AHEAD.",
+            d: "BECAUSE RECEPTION IS POOR WHEN THE ENGINE IS RUNNING",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 53,
+          question:
+            "YOU ARE TAKING DRUGS THAT ARE LIKELY TO AFFECT YOUR DRIVING. WHAT SHOULD YOU DO?",
+          options: {
+            a: "SEEK MEDICAL ADVICE BEFORE DRIVING",
+            b: "LIMIT YOUR DRIVING TO ESSENTIAL JOURNEYS",
+            c: "ONLY DRIVE IF ACCOMPANIED BY A PERMANENT LICENCE HOLDER",
+            d: "DRIVE ONLY FOR SHORT DISTANCES",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 54,
+          question:
+            "YOU HAVE BEEN INVOLVED IN AN ARGUMENT BEFORE STARTING YOUR JOURNEY. THIS HAS MADE YOU FEEL ANGRY. YOU SHOULD",
+          options: {
+            a: "START TO DRIVE, BUT OPEN A WINDOW",
+            b: "DRIVE SLOWER THAN NORMAL AND TURN YOUR RADIO ON",
+            c: "HAVE AN ALCOHOLIC DRINK TO HELP YOU RELAX BEFORE DRIVING",
+            d: "CALM DOWN BEFORE YOU START TO DRIVE.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 55,
+          question: "A DRIVER'S BEHAVIOUR HAS UPSET YOU, IT MAY HELP IF YOU",
+          options: {
+            a: "STOP AND TAKE A BREAK",
+            b: "SHOUT ABUSIVE LANGUAGE",
+            c: "GESTURE TO THEM WITH YOUR HAND",
+            d: "FOLLOW THEIR CAR, FLASHING THE HEADLIGHTS",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 56,
+          question: "A MOTOR DRIVING LICENCE ISSUED IN ANY STATE OF INDIA",
+          options: {
+            a: "IS VALID THROUGH OUT THE INDIA",
+            b: "IS VALID THROUGHOUT THE WORLD",
+            c: "IS VALID ONLY IN THE STATE",
+            d: "NOT VALID ANYWHERE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 57,
+          question: "WHAT SHOULD YOU USE YOUR HORN FOR?",
+          options: {
+            a: "TO ALERT OTHERS OF YOUR PRESENCE",
+            b: "TO ALLOW YOU RIGHT OF WAY",
+            c: "TO GREET OTHER ROAD USERS",
+            d: "TO SIGNAL YOUR ANNOYANCE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 58,
+          question: "BEFORE DRIVING A NEW VEHICLE THE DRIVER SHOULD",
+          options: {
+            a: "BE FAMILIAR WITH THE POSITION OF CONTROLS",
+            b: "ALWAYS USE CHOKE BEFORE TAKE A BATH AND MAKE HIMSELF FIT FOR DRIVING. STARTING.",
+            c: "CHECK ITS NUMBER PLATES.",
+            d: "",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 59,
+          question: "THE FIRST THING THAT ALCOHOL AFFECTS IS",
+          options: {
+            a: "VISION.",
+            b: "SPEECH.",
+            c: "HEARING",
+            d: "JUDGEMENT.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 60,
+          question:
+            "YOU HAVE TO DRIVE IN THE EVENING. YOU ARE INVITED TO A LUNCH, WHAT IS YOUR BEST COURSE OF ACTION?",
+          options: {
+            a: "HAVE ONLY TWO PEGS",
+            b: "DONT DRINK ANY ALCOHOL AT ALL",
+            c: "HAVE SOME MILK BEFORE DRINKING ALCOHOL",
+            d: "EAT A HOT MEAL WITH YOUR ALCOHOLIC DRINKS",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 61,
+          question:
+            "WHAT ADVICE SHOULD YOU GIVE TO A DRIVER WHO HAS HAD A FEW ALCOHOLIC DRINKS AT A PARTY?",
+          options: {
+            a: "HAVE A STRONG CUP OF COFFEE AND THEN DRIVE HOME",
+            b: "DRIVE HOME CAREFULLY AND SLOWLY",
+            c: "GO HOME BY PUBLIC TRANSPORT",
+            d: "WAIT FOR A SHORT WHILE AND THEN DRIVE HOME.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 62,
+          question:
+            "WHAT ELSE CAN SERIOUSLY AFFECT YOUR CONCENTRATION, OTHER THAN ALCOHOLIC DRINKS?",
+          options: {
+            a: "DRUGS",
+            b: "TIREDNESS",
+            c: "LOUD MUSIC",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 63,
+          question:
+            "DO YOU HAVE ANY RESPONSIBILITY WHEN OPENING A VEHICLE DOOR ON A ROADWAY?",
+          options: {
+            a: "THE DRIVER MAY OPEN HIS DOOR WHEN EVER HE WISHES TO.",
+            b: "NO, ANY FOLLOWING TRAFFIC MUST STOP IF THE DOOR INTERFERES WITH PROGRESS.",
+            c: "NO, THERE IS NO REGULATION TO COVER THIS SITUATION.",
+            d: "YES, YOU MUST NOT OPEN A DOOR IF YOU ARE LIKELY TO CAUSE DANGER TO ROAD USERS OR IMPEDE TRAFFIC.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 64,
+          question:
+            "GENERALLY, IF YOU HEAR THE SIREN OF AN EMERGENCY VEHICLE YOU SHOULD",
+          options: {
+            a: "SOUND YOUR HORN",
+            b: "IMMEDIATELY COME TO A STOP",
+            c: "LET THE EMERGENCY VEHICLE PASS AND FOLLOW IT BEHIND CLOSELY",
+            d: "PULL OVER TO THE LEFT UNTILL THE EMERGENCY VEHICLE PASSES.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 65,
+          question:
+            "YOU ARRIVE AT THE SCENE OF A MOTORCYCLE ACCIDENT. NO OTHER VEHICLE IS INVOLVED. THE RIDER IS UNCONSCIOUS, LYING IN THE MIDDLE OF THE ROAD, THE FIRST THING YOU SHOULD DO IS TO",
+          options: {
+            a: "MOVE THE RIDER OUT OF THE ROAD.",
+            b: "WARN OTHER TRAFFIC",
+            c: "CLEAR THE ROAD OF DEBRIS.",
+            d: "GIVE THE RIDER REASSURANCE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 66,
+          question:
+            "WHICH OF THE FOLLOWING ATTITUDES ARE MOST LIKELY TO MAKE YOU A SAFE DRIVER?",
+          options: {
+            a: "WHEN I DRIVE, I AM RESPONSIBLE FOR MY SAFETY AS WELL AS THE SAFETY OF OTHER ROAD USERS.",
+            b: "CRASHING OR NOT CRASHING IS A MATTER OF LUCK",
+            c: "OTHER ROAD USERS MUST ENSURE THEIR SAFETY",
+            d: "OTHER DRIVERS ARE RASH, I AM SAFETY CONSCIOUS.",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 67,
+          question:
+            "YOUR VEHICLE HAS BROKEN DOWN ON A HIGHWAY, WHAT IS THE FIRST THING YOU SHOULD DO?",
+          options: {
+            a: "WARN OTHER TRAFFIC",
+            b: "STOP THE FOLLOWING TRAFFIC AND ASK FOR HELP",
+            c: "ATTEMPT TO REPAIR YOUR VEHICLE QUICKLY",
+            d: "PLACE A WARNING TRIANGLE ON THE ROAD.",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 68,
+          question:
+            "WHICH OF THE FOLLOWING SHOULD NOT BE KEPT IN YOUR VEHICLE?",
+          options: {
+            a: "A FIRST AID KIT",
+            b: "A ROAD ATLAS",
+            c: "INFLAMMABLE MATERIAL",
+            d: "TOOL KIT",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 69,
+          question: "WHICH OF THE FOLLOWING IS TRUE",
+          options: {
+            a: "THE PEDESTRIANS HAVE THE RIGHT OF WAY AT ALL PEDESTRIAN CROSSINGS",
+            b: "PEDESTRIANS HAVE NO RIGHT TO CROSS THE ROAD",
+            c: "PEDESTRIANS SHALL ALLOW THE VEHICLES TO PASS",
+            d: "PEDESTRIANS SHALL MOVE SLOWLY AT ROAD CROSSINGS",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 70,
+          question:
+            "WHAT IS THE MAXIMUM SPEED LIMIT WHEN TOWING ANOTHER MECHANICALLY DISABLED VEHICLE",
+          options: {
+            a: "60KMPH",
+            b: "50KMPH",
+            c: "24KMPH",
+            d: "10KMPH",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 71,
+          question: "WHICH OF THE FOLLOWING IS CORRECT",
+          options: {
+            a: "YOU SHOULD NOT SOUND HORN IN SILENCE ZONES",
+            b: "YOU SHOULD NOT USE MULTI TONED HORNS",
+            c: "YOU SHOULD NOT DRIVE A VEHICLE CREATING UNDUE NOISE",
+            d: "ALL THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 72,
+          question:
+            "WHEN YOU APPROACH A ROAD WHERE WORKERS ARE UNDERTAKING REPAIRS, YOUR SPEED SHALL NOT BE MORE THAN",
+          options: {
+            a: "25KMPH",
+            b: "35KMPH",
+            c: "45KMPH",
+            d: "55KMPH",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 73,
+          question:
+            "WHAT SHALL BE YOUR MAXIMUM SPEED WHEN YOU ARE PASSING A PROCESSION OR MEETINGS ON THE ROAD",
+          options: {
+            a: "35KMPH",
+            b: "25KMPH",
+            c: "45KMPH",
+            d: "55KMPH",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 74,
+          question: "A DRIVER OF GOODS VEHICLE CAN CARRY PASSENGERS",
+          options: {
+            a: "ON THE TRAILOR",
+            b: "ON THE BODY OF THE VEHICLE",
+            c: "FOR HIRE OR REWARD",
+            d: "CAN NOT CARRY PASSENGERS",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 75,
+          question:
+            "WHICH OF THE FOLLOWING DOCUMENTS NEED NOT BE CARRIED WHILE DRIVING THE VEHICLE",
+          options: {
+            a: "DRIVING LICENCE",
+            b: "REGISTRATION CERTIFICATE",
+            c: "INSURANCE CERTIFICATE",
+            d: "INVOICE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 76,
+          question:
+            "WHICH OF THE FOLLOWING ARE AUTHORISED TO ASK YOU FOR PRODUCTION OF DOCUMENTS WHILE YOU ARE DRIVING ON THE ROAD",
+          options: {
+            a: "OFFICERS OF POLICE DEPARTMENT IN UNIFORM",
+            b: "OFFICERS OF TRANSPORT DEPARTMENT IN UNIFORM",
+            c: "ANY OTHER OFFICER AUTHORISED BY GOVERNMENT",
+            d: "ALL OF THESE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 77,
+          question:
+            "WHAT IS THE MAXIMUM SPEED WITH WHICH YOU ARE ALLOWED TO DRIVE A TWO WHEELER ON THE ROAD",
+          options: {
+            a: "60KMPH",
+            b: "80KMPH",
+            c: "50KMPH",
+            d: "100KMPH",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 78,
+          question: "STOPPING WITH THE HELP OF GEARS CAN BE ACHIEVED BY",
+          options: {
+            a: "BRINGING THE GEAR INTO NEUTRAL",
+            b: "SWITCHING OFF THE ENGINE",
+            c: "LOWERING GEARS ONE BY ONE",
+            d: "DEPRESSING THE CLUTCH & BRAKE SIMULTANEOUSLY",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 79,
+          question:
+            "WHICH OF THE FOLLOWING MAY CAUSE LOSS OF CONCENTRATION WHILE DRIVING?",
+          options: {
+            a: "LOUD MUSIC",
+            b: "ARGUING WITH A PASSENGER",
+            c: "USING A MOBILE PHONE",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 80,
+          question:
+            "ON A LONG MOTORWAY JOURNEY BOREDOM CAN CAUSE YOU TO FEEL SLEEPY. YOU SHOULD",
+          options: {
+            a: "LEAVE THE MOTORWAY AND FIND A SAFE PLACE TO STOP AND ENSURE A SUPPLY OF FRESH AIR INTO YOUR VEHICLE",
+            b: "KEEP LOOKING AROUND AT THE SURROUNDING LANDSCAPE",
+            c: "DRIVE FASTER TO COMPLETE YOUR JOURNEY SOONER",
+            d: "STOP ON THE HARD SHOULDER FOR A REST",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 81,
+          question:
+            "WHICH OF THESE DOES THE LAW REQUIRE YOU TO KEEP IN GOOD CONDITION?",
+          options: {
+            a: "HEADLIGHTS",
+            b: "WINDSCREEN",
+            c: "SEAT BELTS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 82,
+          question:
+            "YOU ARE CARRYING TWO 13 YEAR OLD CHILDREN AND THEIR PARENTS IN YOUR CAR. WHO IS RESPONSIBLE FOR SEEING THAT THE CHILDREN WEAR SEAT BELTS?",
+          options: {
+            a: "THE CHILDREN'S PARENTS",
+            b: "YOU, THE DRIVER",
+            c: "THE FRONT-SEAT PASSENGER",
+            d: "THE CHILDREN",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 83,
+          question: "NOISE POLLUTION MAY RESULT IN",
+          options: {
+            a: "DISTURBING MENTAL EQUILIBRIUM.",
+            b: "DISTURBING THE CONCENTRATION OF DRIVER..",
+            c: "LOSS OF HEARING CAPACITY.",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 84,
+          question: "A DRIVER DOES SOMETHING THAT UPSETS YOU. YOU SHOULD",
+          options: {
+            a: "TRY NOT TO REACT",
+            b: "LET THEM KNOW HOW YOU FEEL",
+            c: "FLASH YOUR HEADLIGHTS SEVERAL TIMES",
+            d: "SOUND YOUR HORN",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 85,
+          question:
+            "HOW SHOULD YOU REACT TO DRIVERS WHO APPEAR TO BE INEXPERIENCED?",
+          options: {
+            a: "SOUND YOUR HORN TO WARN THEM OF YOUR PRESENCE",
+            b: "BE PATIENT AND PREPARED FOR THEIR SLOW REACTION",
+            c: "FLASH YOUR HEADLIGHTS TO INDICATE THAT IT IS SAFE FOR THEM TO PROCEED",
+            d: "OVERTAKE THEM AS SOON AS POSSIBLE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 86,
+          question: "YOU SHOULD ONLY FLASH YOUR HEADLIGHTS AT OTHER ROAD USERS",
+          options: {
+            a: "TO SHOW THAT YOU ARE GIVING WAY",
+            b: "TO SHOW THAT YOU ARE ABOUT TO TURN",
+            c: "TO TELL THEM THAT YOU HAVE RIGHT OF WAY",
+            d: "TO LET THEM KNOW THAT YOU ARE THERE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 87,
+          question:
+            "PRESSING THE CLUTCH PEDAL DOWN OR ROLLING IN NEUTRAL FOR TOO LONG WHILE DRIVING WILL",
+          options: {
+            a: "USE MORE FUEL",
+            b: "CAUSE THE ENGINE TO OVERHEAT",
+            c: "REDUCE YOUR CONTROL",
+            d: "IMPROVE TYRE WEAR",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 88,
+          question:
+            "HOW CAN YOU USE THE GEARS OF YOUR VEHICLE TO CONTROL YOUR SPEED?",
+          options: {
+            a: "BY CHANGING TO A LOWER GEAR",
+            b: "BY SELECTING REVERSE GEAR",
+            c: "BY CHANGING TO A HIGHER GEAR",
+            d: "BY SELECTING NEUTRAL GEAR",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 89,
+          question:
+            "YOU ARE DRIVING DOWN A STEEP HILL. WHY COULD KEEPING THE CLUTCH DOWN OR SELECTING NEUTRAL FOR TOO LONG BE DANGEROUS?",
+          options: {
+            a: "FUEL CONSUMPTION WILL BE HIGHER",
+            b: "YOUR VEHICLE WILL PICK UP SPEED",
+            c: "IT WILL DAMAGE THE ENGINE",
+            d: "IT WILL WEAR TYRES OUT MORE QUICKLY",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 90,
+          question:
+            "YOU ARE TRAVELLING IN VERY HEAVY RAIN. YOUR OVERALL STOPPING DISTANCE IS LIKELY TO",
+          options: {
+            a: "INCREASE",
+            b: "DECREASE",
+            c: "BE UP TO TEN TIMES GREATER",
+            d: "REMAIN THE SAME",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 91,
+          question:
+            "WHAT IS THE LEGAL MINIMUM INSURANCE COVER YOU MUST HAVE TO DRIVE ON PUBLIC ROADS?",
+          options: {
+            a: "THIRD PARTY, FIRE AND THEFT",
+            b: "FULLY COMPREHENSIVE",
+            c: "THIRD PARTY ONLY",
+            d: "PERSONAL INJURY COVER",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 92,
+          question:
+            "YOU HAVE JUST BOUGHT A SECOND HAND VEHICLE. WHEN SHOULD YOU TELL THE LICENSING AUTHORITY OF CHANGE OF OWNERSHIP?",
+          options: {
+            a: "WITHIN 14 DAYS",
+            b: "WITHIN 28 DAYS",
+            c: "WITHIN ONE MONTH",
+            d: "ONLY WHEN YOU INSURE IT",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 93,
+          question:
+            "YOU ARE THE FIRST TO ARRIVE AT THE SCENE OF AN ACCIDENT. WHICH OF THESE SHOULD YOU DO?",
+          options: {
+            a: "SWITCH OFF THE VEHICLE ENGINE",
+            b: "MOVE UNINJURED PEOPLE AWAY FROM THE VEHICLE(S)",
+            c: "CALL THE EMERGENCY SERVICES",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 94,
+          question:
+            "AN ACCIDENT HAS JUST HAPPENED. AN INJURED PERSON IS LYING ON THE BUSY ROAD. WHAT IS THE FIRST THING YOU SHOULD DO?",
+          options: {
+            a: "TREAT THE PERSON FOR SHOCK",
+            b: "WARN OTHER TRAFFIC",
+            c: "PLACE HIM IN THE RECOVERY POSITION",
+            d: "MAKE SURE THAT THE INJURED PERSON IS KEPT WARM",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 95,
+          question:
+            "YOU HAVE STOPPED AT THE SCENE OF AN ACCIDENT TO GIVE HELP. WHICH OF THESE THINGS SHOULD YOU DO?",
+          options: {
+            a: "KEEP INJURED PEOPLE WARM AND COMFORTABLE",
+            b: "KEEP INJURED PEOPLE CALM BY TALKING TO THEM REASSURINGLY",
+            c: "MAKE SURE THAT INJURED PEOPLE ARE NOT LEFT ALONE",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 96,
+          question:
+            "YOUR INDICATORS MAY BE DIFFICULT TO SEE IN BRIGHT SUNLIGHT. WHAT SHOULD YOU DO?",
+          options: {
+            a: "GIVE AN ARM SIGNAL AS WELL AS USE YOUR INDICATORS",
+            b: "PUT YOUR INDICATOR ON EARLIER",
+            c: "TOUCH THE BRAKE SEVERAL TIME TO SHOW THE STOP LIGHTS",
+            d: "TURN AS QUICKLY AS YOU CAN",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 97,
+          question:
+            "WHAT ARE THE DOCUMENTS YOU NEED TO CARRY WITH YOU IN YOUR VEHICLE ALWAYS WHILE DRIVING?",
+          options: {
+            a: "DRIVING LICENCE",
+            b: "DRIVING LICENCE AND INSURANCE CERTIFICATE",
+            c: "DRIVING LICENCE, CERTIFICATE OF INSURANCE, REGISTRATION CERTIFICATE AND POLLUTION UNDER CONTROL CERTIFICATE",
+            d: "NO NEED TO CARRY THESE DOCUMENTS SINCE THEY CAN BE STOLEN OR MISPLACED",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 98,
+          question: "WHAT IS THE VALIDITY PERIOD OF A LEARNER'S LICENCE?",
+          options: {
+            a: "180 DAYS",
+            b: "30 DAYS",
+            c: "60 DAYS",
+            d: "190 DAYS",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 99,
+          question:
+            "WHAT IS THE GRACE PERIOD FOR THE RENEWAL OF A PERMANENT DRIVING LICENCE?",
+          options: {
+            a: "NIL",
+            b: "30 DAYS",
+            c: "60 DAYS",
+            d: "190 DAYS",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 100,
+          question: "UNDER WHAT CIRCUMSTANCES CAN YOUR VEHICLE BE IMPOUNDED?",
+          options: {
+            a: "WHEN DRIVING A VEHICLE WITHOUT REGISTRATION",
+            b: "WHEN FLASHING HEADLIGHTS UNNECESSARILY",
+            c: "WHEN REGISTRATION NUMBERS ARE WRITTEN IN INCORRECT SIZE DIMENSIONS",
+            d: "WHEN REGISTRATION PLATE HAS A WRONG COLOUR BACKGROUND",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 101,
+          question: "HOW DOES ALCOHOL AFFECT YOUR DRIVING?",
+          options: {
+            a: "IT SPEEDS UP YOUR REACTIONS",
+            b: "IT REDUCES YOUR CONCENTRATION",
+            c: "IT INCREASES YOUR AWARENESS",
+            d: "IT IMPROVES YOUR CO-ORDINATION",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 102,
+          question:
+            "WHAT DOES THE LAW REQUIRE WITH REGARD TO THE NEGOTIATING OF UNCONTROLLED PEDESTRIAN CROSSING?",
+          options: {
+            a: "SPEED UP BUT AVOID HITTING PEDESTRIANS WHO ARE ALREADY ON THE PEDESTRIAN CROSSING",
+            b: "SLOW DOWN AND PROCEED",
+            c: "STOP AND GIVE PRECEDENCE TO PEDESTRIANS WHO ARE ALREADY ON THE PEDESTRIAN CROSSING",
+            d: "SPEED UP KEEPING IN MIND PEDESTRIANS WHO ARE ALREADY ON THE PEDESTRIAN CROSSING",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 103,
+          question:
+            "WHAT SHOULD YOU DO WHEN YOU ARE DAZZLED BY HEADLIGHTS OF OTHER VEHICLES AT NIGHT?",
+          options: {
+            a: "SLOW DOWN OR STOP, IF NECESSARY",
+            b: "LOOK TO THE LEFT SIDE OF THE ROAD AND SLOW DOWN. KEEP HEADLIGHTS ON LOW BEAM",
+            c: "DIP YOUR HEADLIGHTS CONTINUOUSLY",
+            d: "SPEED UP",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 104,
+          question: "A COVER NOTE IS A DOCUMENT ISSUED BEFORE YOU RECEIVE YOUR",
+          options: {
+            a: "DRIVING LICENCE.",
+            b: "REGISTRATION DOCUMENT",
+            c: "INSURANCE CERTIFICATE",
+            d: "PUC CERTIFICATE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 105,
+          question:
+            "WHEN YOU SMELL OR SEE FIRE IN YOUR VEHICLE, WHAT SHOULD YOU DO?",
+          options: {
+            a: "PULL TO THE SIDE OF THE ROAD IMMEDIATELY, TURN OFF THE ENGINE AND ALL ELECTRICAL SWITCHES AND TRY TO SMOOTHER BURNING WIRES WITH SAND OR HEAVY CLOTH",
+            b: "PULL TO THE SIDE OF THE ROAD IMMEDIATELY, TURN OFF THE ENGINE AND ALL ELECTRICAL SWITCHES AND SMOTHER BURNING WIRES BY POURING WATER ON THEM.",
+            c: "DON'T DO ANYTHING BUT CALL THE FIRE BRIGADE.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 106,
+          question:
+            "YOU SHOULD NOT DRIVE WITH YOUR FOOT ON THE CLUTCH FOR LONGER THAN NECESSARY BECAUSE IT",
+          options: {
+            a: "REDUCES CONTROL OVER THE VEHICLE AND WILL RESULT IN PREMATURE CLUTCH FAILURE",
+            b: "INCREASES WEAR OF THE GEARBOX",
+            c: "DECREASES PETROL CONSUMPTION",
+            d: "REDUCES THE GRIP OF THE TYRES",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 107,
+          question: "FUNCTION OF CHOKE IS TO",
+          options: {
+            a: "ENRICH FUEL IN THE AIR-FUEL MIXTURE",
+            b: "ENRICH AIR IN THE AIR-FUEL MIXTURE",
+            c: "ENRICH FUEL IN THE AIR-WATER-FUEL MIXTURE",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 108,
+          question: "YOU HAVE THIRD PARTY INSURANCE. WHAT DOES THIS COVER?",
+          options: {
+            a: "INJURY TO ANOTHER PERSON.",
+            b: "DAMAGE TO SOMEONE'S PROPERTY.",
+            c: "DAMAGE TO OTHER VEHICLES.",
+            d: "ALL OF THE ABOVE.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 109,
+          question:
+            "WHAT IS THE MAIN REASON THAT YOUR STOPPING DISTANCE INCREASES AFTER HEAVY RAIN?",
+          options: {
+            a: "YOU ARE NOT ABLE TO SEE LARGE PUDDLES.",
+            b: "THE BRAKES ARE COLD BECAUSE THEY'RE WET.",
+            c: "YOUR TYRES HAVE LESS GRIP ON THE ROAD.",
+            d: "WATER ON THE WINDSCREEN BLURS YOUR VIEW OF THE ROAD AHEAD.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 110,
+          question:
+            "WHEN YOUR VEHICLE IS LOADED YOU MUST MAKE SURE THAT THE LOAD WILL",
+          options: {
+            a: "REMAIN SECURE",
+            b: "BE EASY TO UNLOAD",
+            c: "NOT BE DAMAGED",
+            d: "NOT DAMAGE THE VEHICLE.",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 111,
+          question:
+            "YOU SEE A PEDESTRIAN CARRYING A WHITE STICK. THIS SHOWS THAT THE PERSON IS",
+          options: {
+            a: "DISABLED",
+            b: "DEAF",
+            c: "ELDERLY",
+            d: "BLIND",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 112,
+          question:
+            "WHILE DRIVING, YOU APPROACH ROAD WORKS. YOU SEE A TEMPORARY MAXIMUM SPEED LIMIT SIGN. YOU MUST",
+          options: {
+            a: "COMPLY WITH THE SIGN DURING THE WORKING DAY",
+            b: "COMPLY WITH THE SIGN AT ALL TIMES",
+            c: "COMPLY WITH THE SIGN WHEN THE LANES ARE NARROW",
+            d: "COMPLY WITH THE SIGN DURING THE HOURS OF DARKNESS.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 113,
+          question:
+            "THE DRIVER OF A FOUR WHEELER MUST ENSURE THAT ANY LOAD THAT IS CARRIED ON A ROOF RACK MUST BE",
+          options: {
+            a: "SECURELY FASTENED WHEN DRIVING",
+            b: "CARRIED ONLY WHEN STRICTLY NECESSARY",
+            c: "AS LIGHT AS POSSIBLE",
+            d: "COVERED WITH PLASTIC SHEETING",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 114,
+          question: "WHY PASSING A LORRY IS MORE RISKY THAN PASSING A CAR?",
+          options: {
+            a: "LORRIES ARE LONGER THAN CARS.",
+            b: "LORRIES MAY SUDDENLY PULL UP",
+            c: "THE BRAKES OF LORRIES ARE NOT AS GOOD",
+            d: "LORRIES CLIMB HILLS MORE SLOWLY",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 115,
+          question: "BEFORE STARTING THE VEHICLE THE DRIVER SHOULD CHECK-",
+          options: {
+            a: "IF THE NO. PLATES ARE CLEAN",
+            b: "TYRE CONDITION, PRESSURE & WHEEL NUT FOR PROPER TIGHTENING.",
+            c: "LEAKAGE OF FUEL, COOLANT OR OIL",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 116,
+          question: "WHICH IS ILLEGAL WHILE DRIVING A FOUR WHEELER VEHICLE?",
+          options: {
+            a: "IMPROPER WORKING OF ALL LIGHTS & INDICATORS.",
+            b: "NOT USING SEAT BELTS.",
+            c: "BOTH OF THE ABOVE.",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 117,
+          question:
+            "WHILE DRIVING YOU SHOULD ALWAYS KEEP THE FOLLOWING IN MIND-",
+          options: {
+            a: "CONDITION OF THE ROAD & WEATHER..",
+            b: "TYPE OF VEHICLE & TRAFFIC CONDITION.",
+            c: "YOUR OWN SKILL & CONCENTRATION.",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 118,
+          question:
+            "WHEN YOU ARE BEING OVERTAKEN OR PASSED BY ANOTHER VEHICLE. DO NOT",
+          options: {
+            a: "GIVE HAND SIGNALS.",
+            b: "REDUCE YOUR VEHICLE'S SPEED.",
+            c: "USE HEAD LIGHTS.",
+            d: "INCREASE YOUR SPEED.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 119,
+          question:
+            "WHO IS RESPONSIBLE FOR ENSURING THAT THE VEHICLE IS NOT OVERLOADED?",
+          options: {
+            a: "THE PASSENGERS.",
+            b: "THE MECHANIC OF THE VEHICLE.",
+            c: "THE DRIVER OF THE VEHICLE.",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 120,
+          question:
+            "ON A FOGGY DAY YOU HAVE TO UNAVOIDABLY PARK YOUR VEHICLE ON THE ROAD, WHAT SHOULD YOU DO?",
+          options: {
+            a: "LEAVE HEADLIGHTS ON",
+            b: "LEAVE SIDE LIGHTS ON",
+            c: "KEEP STONES/BRICKS AROUND YOUR VEHICLE",
+            d: "NONE OF THESE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 121,
+          question: "YOU SHOULD USE A MOBILE TELEPHONE ONLY WHEN YOU",
+          options: {
+            a: "HAVE STOPPED AT A SAFE PLACE",
+            b: "ARE TRAVELLING SLOWLY",
+            c: "ARE ON A MOTORWAY",
+            d: "ARE APPROACHING A LIGHT TRAFFIC",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 122,
+          question:
+            "TURBULENCE IS CREATED BY LARGE VEHICLES TRAVELLING AT SPEED. THIS IS MOST LIKELY TO BE A DANGER TO",
+          options: {
+            a: "CYCLISTS",
+            b: "PEDESTRIANS",
+            c: "MOTORCYCLISTS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 123,
+          question:
+            "YOU ARE DRIVING IN HEAVY RAIN. YOUR STEERING SUDDENLY BECOMES VERY LIGHT. YOU SHOULD",
+          options: {
+            a: "STEER TOWARDS THE SIDE OF THE ROAD",
+            b: "APPLY GENTLE ACCELERATION",
+            c: "BRAKE FIRMLY TO REDUCE SPEED",
+            d: "EASE OFF THE ACCELERATOR",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 124,
+          question:
+            "YOU ARE FOLLOWING A LARGE LORRY ON A WET ROAD. SPRAY MAKES IT DIFFICULT TO SEE. YOU SHOULD",
+          options: {
+            a: "DROP BACK UNTIL YOU CAN SEE BETTER",
+            b: "PUT YOUR HEADLIGHTS ON FULL BEAM",
+            c: "KEEP CLOSE TO THE LORRY, AWAY FROM THE SPRAY",
+            d: "SPEED UP AND OVERTAKE QUICKLY",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 125,
+          question:
+            "YOU ARE DRIVING IN FOG. WHY SHOULD YOU KEEP WELL BACK FROM THE VEHICLE IN FRONT?",
+          options: {
+            a: "IN CASE IT CHANGES DIRECTION SUDDENLY",
+            b: "IN CASE IT'S FOG LIGHTS DAZZLE YOU",
+            c: "IN CASE IT STOPS SUDDENLY",
+            d: "IN CASE ITS BRAKE LIGHTS DAZZLE YOU",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 126,
+          question:
+            "YOU ARRIVE AT AN ACCIDENT WHERE SOMEONE IS SUFFERING FROM SEVERE BURNS. WHICH OF THE FOLLOWING WOULD HELP?",
+          options: {
+            a: "DOUSE THE BURNS WITH COLD WATER",
+            b: "REMOVE ANYTHING STUCK TO THE BURNS",
+            c: "BURST BLISTERS THAT FORM ON THE BURNS",
+            d: "APPLY OINTMENT TO THE BURNS",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 127,
+          question: "AIR POLLUTION EFFECTS",
+          options: {
+            a: "HUMAN BEINGS",
+            b: "PLANTS",
+            c: "ANIMALS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 128,
+          question: "WHAT WILL HAPPEN IF THE WHEELS ARE NOT PROPERLY BALANCED?",
+          options: {
+            a: "VEHICLE PULLING TO THE RIGHT.",
+            b: "VEHICLE PULLING TO THE LEFT.",
+            c: "STEERING WOBBLING.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 129,
+          question: "WHAT IS MEANT BY CLUTCH RIDING?",
+          options: {
+            a: "KEEPING YOUR FOOT ON THE CLUTCH WHILE DRIVING",
+            b: "NOT USING THE CLUTCH WHILE CHANGING GEAR",
+            c: "KEEPING YOUR FOOT OFF THE CLUTCH WHILE DRIVING",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 130,
+          question:
+            "THERE IS VIBRATION ON YOUR STEERING WHEEL AS YOU DRIVE. WHAT IS THE PROBABLE CAUSE?",
+          options: {
+            a: "LOW LEVEL OF ENGINE OIL.",
+            b: "LOW LEVEL OF COOLANT.",
+            c: "UNBALANCED WHEELS.",
+            d: "BALDING OF TYRES.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 131,
+          question:
+            "WHEN MAY A DRIVER LEND HIS DRIVING LICENCE TO ANOTHER PERSON?",
+          options: {
+            a: "FOR DRIVING LESSONS.",
+            b: "AT NO TIME.",
+            c: "FOR IDENTIFICATION ONLY.",
+            d: "IF THE PERSON IS WELL KNOWN TO HIM.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 132,
+          question: "IF YOUR VEHICLE HITS A PEDESTRIAN YOU SHOULD",
+          options: {
+            a: "IDENTIFY YOURSELF AND LEAVE.",
+            b: "HELP THE PERSON AND CALL AN AMBULANCE.",
+            c: "HELP THE INJURED PERSON, IDENTIFY YOURSELF AND THEN REPORT TO THE POLICE.",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 133,
+          question:
+            "STICKERS, POSTERS AND OTHER NON-OFFICIAL ITEMS MAY NOT BE PLACED ON THE WINDSHIELD OF AN AUTOMOBILE BECAUSE:-",
+          options: {
+            a: "IT IS UNLAWFUL TO ADVERTISE IN THIS WAY.",
+            b: "THEY OBSTRUCT THE DRIVER'S VISION.",
+            c: "OTHER DRIVERS CANNOT SEE YOU.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 134,
+          question:
+            "A PERSON HAVING DRIVING LICENCE SUSPENDED OR CANCELLED MAY",
+          options: {
+            a: "DRIVE IN AN EMERGENCY?",
+            b: "DRIVE ONLY WHEN A VALID DRIVING LICENCE HOLDER IS WITH HIM.",
+            c: "NOT DRIVE UNDER ANY CONDITIONS.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 135,
+          question:
+            "IF A PERSON'S DRIVING LICENCE VALIDITY PERIOD IS OVER, HE CAN APPLY FOR RENEWAL OF MOTOR DRIVING LICENCE WITHIN WITHOUT PENALTY",
+          options: {
+            a: "TEN DAYS.",
+            b: "TWENTY DAYS.",
+            c: "THIRTY DAYS",
+            d: "TWENTY FIVE DAYS.",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 136,
+          question: "ANY PERSON MAY HOLD",
+          options: {
+            a: "MAXIMUM 3 LICENCES AT A TIME, ONE FOR EACH CLASS.",
+            b: "ONLY ONE LICENCE.",
+            c: "ANY NUMBER OF LICENCES HOWEVER EACH LICENCE MUST AUTHORISE ONLY ONE CLASS OF MOTOR VEHICLE FOR DRIVING.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 137,
+          question:
+            "LENDING OF A MOTOR VEHICLE TO A PERSON FOR DRIVING, WHO IS NOT HOLDING A VALID LICENCE IS:-",
+          options: {
+            a: "NOT AN OFFENCE SINCE THE BORROWER IS SOLELY RESPONSIBLE.",
+            b: "A SERIOUS OFFENCE.",
+            c: "AN OFFENCE ONLY WHEN VEHICLE IS INVOLVED IN AN ACCIDENT.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 138,
+          question:
+            "DRIVING A VEHICLE HAVING POLLUTION VALUES ABOVE THE LIMIT SPECIFIED BY THE LAW: -",
+          options: {
+            a: "IS PERMITTED ONLY IN EMERGENCY.",
+            b: "IS AN OFFENCE",
+            c: "IS STRICT WARNING FROM AUTHORITIES.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 139,
+          question: "FITMENT OF A MULTITONED HORN TO A MOTOR VEHICLE: -",
+          options: {
+            a: "IS PERMITTED ONLY IN EMERGENCY.",
+            b: "IS AN OFFENCE UNDER THE LAW AS IT CAUSES NOISE POLLUTION.",
+            c: "IS LIABLE FOR A STRICT WARNING FROM AUTHORITIES.",
+            d: "NONE OF THE ABOVE.",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 140,
+          question: "THE AIM OF FIRST AID IS",
+          options: {
+            a: "TO SAVE LIFE",
+            b: "TO PROMOTE RECOVERY",
+            c: "TO PREVENT WORSENING OF VICTIM'S CONDITION",
+            d: "ALL OF THE ABOVE.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 141,
+          question: "ALCOHOL MAY RESULT IN",
+          options: {
+            a: "IRRITABILITY",
+            b: "LOOSE TEMPER",
+            c: "ANGER",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 142,
+          question: "ALCOHOL AFFECTS",
+          options: {
+            a: "DECISION MAKING",
+            b: "SELF CONTROL",
+            c: "THINKING",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 143,
+          question: "ALCOHOL MAY RESULT IN",
+          options: {
+            a: "HOSTILE BEHAVIOUR",
+            b: "INDECISION",
+            c: "VIOLENT BEHAVIOUR",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 144,
+          question: "ALCOHOL MAY AFFECT ADVERSELY BY",
+          options: {
+            a: "REDUCING ALERTNESS",
+            b: "AFFECTING VISION",
+            c: "LOSS OF DECISION MAKING",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 145,
+          question:
+            "INCREASING YOUR SPEED HAS WHAT EFFECT ON STOPPING DISTANCE?",
+          options: {
+            a: "NO DIFFERENCE IN STOPPING DISTANCE.",
+            b: "THE MORE THE SPEED THE LESSER THE STOPPING DISTANCE",
+            c: "THE MORE THE SPEED THE MORE THE STOPPING DISTANCE",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 146,
+          question:
+            "WHILE STARTING THE VEHICLE WHICH OF THE FOLLOWING THINGS SHOULD BE DONE",
+          options: {
+            a: "GEAR SHOULD BE IN NEUTRAL.",
+            b: "PARKING BRAKE SHOULD BE ON.",
+            c: "CLUTCH PEDAL SHOULD BE DEPRESSED.",
+            d: "ALL OF THE ABOVE.",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 147,
+          question: "THE RIGHT OF WAY SHOULD BE GIVEN TO",
+          options: {
+            a: "POLICE VEHICLES",
+            b: "BUSES",
+            c: "EMERGENCY VEHICLES",
+            d: "TWO WHEELERS",
+          },
+          answerOption: "c",
+        },
+        {
+          id: 148,
+          question: "FOG LAMPS ARE USED",
+          options: {
+            a: "AT NIGHT",
+            b: "INSTEAD OF PARKING LIGHTS",
+            c: "ON HIGHWAYS",
+            d: "WHEN THERE IS MIST",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 149,
+          question: "ZEBRA CROSSING IS MEANT FOR",
+          options: {
+            a: "PEDESTRIANS",
+            b: "EMERGENCY VEHICLES",
+            c: "SLOW MOVING VEHICLES",
+            d: "STOPPING THE VEHICLE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 150,
+          question: "BOARDING AND ALIGHTING WHILE THE VEHICLE IS IN MOTION",
+          options: {
+            a: "IS PERMITTED FOR BUSES",
+            b: "IS PROHIBITED FOR ALL TYPES OF VEHICLES",
+            c: "IS PROHIBITED FOR BUSES",
+            d: "IS PERMITTED FOR PASSENGER VEHICLES",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 151,
+          question: "MORE THAN TWO PERSONS ON A TWO WHEELER IS",
+          options: {
+            a: "ALLOWED WHEN TRAFFIC DENSITY IS LOW",
+            b: "VIOLATION OF LAW",
+            c: "ALLOWED IN SOME PLACES",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 152,
+          question: "USING UNREGISTERED VEHICLE IN PUBLIC PLACES IS",
+          options: {
+            a: "ILLEGAL",
+            b: "LEGAL",
+            c: "ALLOWED IN SOME PLACES",
+            d: "ANY OF THE ABOVE",
+          },
+          answerOption: "a",
+        },
+        {
+          id: 153,
+          question: "DRIVING AT HIGH SPEED",
+          options: {
+            a: "GIVES YOU A BETTER FUEL AVERAGE",
+            b: "DOES NOT GIVE YOU SUFFICIENT TIME TO REACT TO HAZARDS",
+            c: "TAKE LESS TIME FOR YOUR JOURNEY",
+            d: "WILL CAUSE LESS DAMAGE TO YOUR ENGINE",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 154,
+          question: "A BASIC RULE WHEN ON HIGHWAYS IS",
+          options: {
+            a: "USE THE LANE THAT HAS LEAST TRAFFIC",
+            b: "KEEP THE LEFT LANE UNLESS OVERTAKING",
+            c: "OVERTAKE ON THE SIDE THAT IS CLEAREST",
+            d: "TRY TO KEEP ABOVE 50 KMPH TO PREVENT CONGESTION",
+          },
+          answerOption: "b",
+        },
+        {
+          id: 155,
+          question: "CAUSES OF THE AUTOMOBILE POLLUTION IS / ARE",
+          options: {
+            a: "POOR MAINTENANCE",
+            b: "OVER LOADING OF VEHICLES",
+            c: "FREQUENT TRAFFIC JAMS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 156,
+          question: "WHICH OF THE FOLLOWING WILL AFFECT YOUR STOPPING DISTANCE",
+          options: {
+            a: "HOW FAST YOU ARE GOING",
+            b: "THE TYRES OF YOUR VEHICLE",
+            c: "WEATHER",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 157,
+          question: "TO REDUCE THE VOLUME OF TRAFFIC ON THE ROADS YOU COULD",
+          options: {
+            a: "USE PUBLIC TRANSPORT MORE OFTEN",
+            b: "SHARE A CAR WHEN POSSIBLE",
+            c: "WALK OR CYCLE ON SHORT JOURNEYS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 158,
+          question: "TO PREVENT POLLUTING THE ENVIRONMENT, YOU CAN HELP BY",
+          options: {
+            a: "HAVING YOUR VEHICLE PROPERLY SERVICED",
+            b: "MAKING SURE YOUR TYRES ARE CORRECTLY INFLATED",
+            c: "NOT OVER DRIVING IN LOWER GEARS",
+            d: "ALL OF THE ABOVE",
+          },
+          answerOption: "d",
+        },
+        {
+          id: 159,
+          question: "A PROPERLY SERVICED VEHICLE WILL GIVE",
+          options: {
+            a: "LOWER INSURANCE PREMIUMS",
+            b: "YOU A REFUND ON YOUR ROAD TAX",
+            c: "BETTER FUEL ECONOMY AND CLEANER EXHAUST EMISSIONS",
+            d: "NONE OF THE ABOVE",
+          },
+          answerOption: "c",
+        },
+      ];
+      const mainContainer = document.querySelector(".main-container");
+      const totalAttemptedEle = document.querySelector(".total");
+      const scoreEle = document.querySelector(".scored");
+
+      let attempted = 0;
+      let scored = 0;
+
+      // 1. Generate the HTML for the questions
+      questionData.forEach((item) => {
+        const { id, question, imageID, options, answerOption } = item;
+
+        const html = `
+        <div class="question-tab">
+          <div class="q-options">
+            <h1><span>${id}. </span>${question}</h1>
+            <p style="margin-bottom: 15px; color: #aaa;">Select an option below:</p>
+            <ul class="options" data-question-id="${id}">
+              <li class="option-item" data-choice="a"><b>a.</b> ${options.a}</li>
+              <li class="option-item" data-choice="b"><b>b.</b> ${options.b}</li>
+              <li class="option-item" data-choice="c"><b>c.</b> ${options.c}</li>
+              <li class="option-item" data-choice="d"><b>d.</b> ${options.d}</li>
+            </ul>
+          </div>
+        </div>`;
+
+        mainContainer.insertAdjacentHTML("beforeend", html);
+      });
+
+      // 2. Add Event Listener to handle the clicks
+      mainContainer.addEventListener("click", function (event) {
+        const clickedOption = event.target.closest(".option-item");
+
+        if (!clickedOption) return;
+
+        const optionsList = clickedOption.closest(".options");
+
+        if (optionsList.classList.contains("answered")) return;
+
+        const questionId = parseInt(
+          optionsList.getAttribute("data-question-id"),
+        );
+        const userChoice = clickedOption.getAttribute("data-choice");
+
+        const question = questionData.find((q) => q.id === questionId);
+        const correctAnswer = question.answerOption;
+
+        // Lock the question
+        optionsList.classList.add("answered");
+
+        // --- NEW LOGIC: Update scores ---
+        attempted++; // Always increment attempted count
+
+        if (userChoice === correctAnswer) {
+          clickedOption.classList.add("correct");
+          scored++; // Increment score if correct
+        } else {
+          clickedOption.classList.add("wrong");
+
+          const correctOptionElement = optionsList.querySelector(
+            `[data-choice="${correctAnswer}"]`,
+          );
+          if (correctOptionElement) {
+            correctOptionElement.classList.add("correct");
+          }
+        }
+
+        // --- NEW LOGIC: Render new scores to DOM ---
+        scoreEle.textContent = scored;
+        totalAttemptedEle.textContent = attempted;
+      });
+    </script>
+  </body>
+</html>
